@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { GiWeightLiftingUp, GiRunningShoe } from "react-icons/gi";
 import { FaDumbbell } from "react-icons/fa";
 import useScrollReveal from "../hooks/useScrollReveal";
@@ -28,6 +30,9 @@ const programs = [
 
 export default function ProgramHighlights() {
   const [ref, visible] = useScrollReveal();
+  const [reducedMotion] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
 
   return (
     <section id="facilities" className="py-16 md:py-20 px-4 bg-white section-soft">
@@ -45,13 +50,13 @@ export default function ProgramHighlights() {
           <div
             key={p.title}
             className={`group relative overflow-hidden rounded-2xl bg-orange-50 border border-orange-100 hover:border-orange-300 lift-hover transition-all duration-500 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-            style={{ transitionDelay: `${idx * 120}ms` }}
+            style={{ transitionDelay: reducedMotion ? "0ms" : `${idx * 120}ms` }}
           >
             <img
               src={p.image}
               alt={p.title}
               loading="lazy"
-              className="w-full h-48 md:h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500"
             />
             <div className="p-5 md:p-6">
               <div className="mb-3">{p.icon}</div>

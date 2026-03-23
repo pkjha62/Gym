@@ -10,6 +10,8 @@ const quickLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
+const NEWSLETTER_STATUS_MS = 3000;
+
 export default function Footer() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -20,7 +22,7 @@ export default function Footer() {
     // In production this would POST to the backend
     setSubmitted(true);
     setEmail("");
-    setTimeout(() => setSubmitted(false), 3000);
+    setTimeout(() => setSubmitted(false), NEWSLETTER_STATUS_MS);
   };
 
   return (
@@ -74,7 +76,7 @@ export default function Footer() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
               required
-              className="flex-1 bg-orange-50 border border-orange-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
+              className="flex-1 bg-orange-50 border border-orange-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-400 transition-colors duration-300"
             />
             <button
               type="submit"

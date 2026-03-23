@@ -12,7 +12,7 @@ export default function AboutFounder() {
             src="https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=700&q=80"
             alt="Founder"
             loading="lazy"
-            className="rounded-2xl shadow-xl w-full object-cover max-h-[420px] md:max-h-[500px]"
+             className="w-full rounded-lg object-cover aspect-square"
           />
           <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-orange-600 text-white rounded-full hidden lg:flex items-center justify-center text-xs font-bold leading-tight text-center">
             10+<br />Years

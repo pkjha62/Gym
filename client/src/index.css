@@ -16,7 +16,7 @@
 
   body {
     @apply bg-orange-50 text-zinc-900 antialiased;
-    font-family: "Space Grotesk", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Manrope", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   }
 
   @media (prefers-reduced-motion: reduce) {

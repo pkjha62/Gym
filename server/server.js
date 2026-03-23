@@ -29,12 +29,25 @@ app.use(
 app.use(express.json({ limit: "10kb" }));
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
-const adminApiKey = process.env.ADMIN_API_KEY || "";
+const adminApiKey = process.env.ADMIN_API_KEY;
+
+function validateObjectId(paramName, label) {
+  return (req, res, next) => {
+    const value = req.params[paramName];
+    if (!isValidObjectId(value)) {
+      return res.status(400).json({ error: `Invalid ${label} id` });
+    }
+    return next();
+  };
+}
+
+if (!adminApiKey) {
+  console.error("✗ ADMIN_API_KEY not set in environment—admin routes will be inaccessible");
+}
 
 app.use("/api/admin", (req, res, next) => {
   if (!adminApiKey) {
-    // Fallback for local development if key is not set
-    return next();
+    return res.status(401).json({ error: "Admin API key not configured on server" });
   }
 
   const incomingKey = req.headers["x-admin-key"];
@@ -80,9 +93,25 @@ app.get("/api/testimonials", async (_req, res) => {
   }
 });
 
-// Contact form — public
+// Contact form — public with rate limiting
+const contactRateLimit = new Map();
+const CONTACT_RATE_LIMIT = 5; // Max 5 submissions
+const CONTACT_RATE_WINDOW = 60 * 60 * 1000; // Per hour (milliseconds)
+
 app.post("/api/contact", async (req, res) => {
   try {
+    const clientIp = req.ip;
+    const now = Date.now();
+    const userSubmissions = contactRateLimit.get(clientIp) || [];
+    const recentSubmissions = userSubmissions.filter((time) => now - time < CONTACT_RATE_WINDOW);
+
+    if (recentSubmissions.length >= CONTACT_RATE_LIMIT) {
+      return res.status(429).json({ error: "Too many submissions. Please try again later." });
+    }
+
+    recentSubmissions.push(now);
+    contactRateLimit.set(clientIp, recentSubmissions);
+
     const { name, email, phone, message } = req.body;
     const lead = await ContactLead.create({ name, email, phone, message });
     res.status(201).json({ message: "Thank you! We will get back to you soon.", id: lead._id });
@@ -110,10 +139,9 @@ app.post("/api/admin/plans", async (req, res) => {
   }
 });
 
-app.put("/api/admin/plans/:id", async (req, res) => {
+app.put("/api/admin/plans/:id", validateObjectId("id", "plan"), async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ error: "Invalid plan id" });
 
     const updated = await Plan.findByIdAndUpdate(id, req.body, {
       new: true,
@@ -126,10 +154,9 @@ app.put("/api/admin/plans/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/admin/plans/:id", async (req, res) => {
+app.delete("/api/admin/plans/:id", validateObjectId("id", "plan"), async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ error: "Invalid plan id" });
 
     const deleted = await Plan.findByIdAndDelete(id);
     if (!deleted) return res.status(404).json({ error: "Plan not found" });
@@ -158,10 +185,9 @@ app.post("/api/admin/testimonials", async (req, res) => {
   }
 });
 
-app.put("/api/admin/testimonials/:id", async (req, res) => {
+app.put("/api/admin/testimonials/:id", validateObjectId("id", "testimonial"), async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ error: "Invalid testimonial id" });
 
     const updated = await Testimonial.findByIdAndUpdate(id, req.body, {
       new: true,
@@ -174,10 +200,9 @@ app.put("/api/admin/testimonials/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/admin/testimonials/:id", async (req, res) => {
+app.delete("/api/admin/testimonials/:id", validateObjectId("id", "testimonial"), async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ error: "Invalid testimonial id" });
 
     const deleted = await Testimonial.findByIdAndDelete(id);
     if (!deleted) return res.status(404).json({ error: "Testimonial not found" });
@@ -197,10 +222,9 @@ app.get("/api/admin/leads", async (_req, res) => {
   }
 });
 
-app.put("/api/admin/leads/:id", async (req, res) => {
+app.put("/api/admin/leads/:id", validateObjectId("id", "lead"), async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ error: "Invalid lead id" });
 
     const updated = await ContactLead.findByIdAndUpdate(id, req.body, {
       new: true,
@@ -213,10 +237,9 @@ app.put("/api/admin/leads/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/admin/leads/:id", async (req, res) => {
+app.delete("/api/admin/leads/:id", validateObjectId("id", "lead"), async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ error: "Invalid lead id" });
 
     const deleted = await ContactLead.findByIdAndDelete(id);
     if (!deleted) return res.status(404).json({ error: "Lead not found" });
@@ -238,6 +261,16 @@ app.get("/api/admin/members", async (_req, res) => {
 
 app.post("/api/admin/members", async (req, res) => {
   try {
+    if (req.body.activePlan) {
+      if (!isValidObjectId(req.body.activePlan)) {
+        return res.status(400).json({ error: "Invalid active plan id" });
+      }
+      const planExists = await Plan.exists({ _id: req.body.activePlan });
+      if (!planExists) {
+        return res.status(400).json({ error: "Selected active plan does not exist" });
+      }
+    }
+
     const member = await Member.create(req.body);
     const safeMember = await Member.findById(member._id).populate("activePlan", "name price durationInMonths");
     res.status(201).json(safeMember);
@@ -246,13 +279,22 @@ app.post("/api/admin/members", async (req, res) => {
   }
 });
 
-app.put("/api/admin/members/:id", async (req, res) => {
+app.put("/api/admin/members/:id", validateObjectId("id", "member"), async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ error: "Invalid member id" });
 
     const member = await Member.findById(id).select("+password");
     if (!member) return res.status(404).json({ error: "Member not found" });
+
+    if (req.body.activePlan) {
+      if (!isValidObjectId(req.body.activePlan)) {
+        return res.status(400).json({ error: "Invalid active plan id" });
+      }
+      const planExists = await Plan.exists({ _id: req.body.activePlan });
+      if (!planExists) {
+        return res.status(400).json({ error: "Selected active plan does not exist" });
+      }
+    }
 
     const updatableFields = ["name", "email", "phone", "activePlan", "planExpiry"];
     updatableFields.forEach((field) => {
@@ -268,10 +310,9 @@ app.put("/api/admin/members/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/admin/members/:id", async (req, res) => {
+app.delete("/api/admin/members/:id", validateObjectId("id", "member"), async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) return res.status(400).json({ error: "Invalid member id" });
 
     const deleted = await Member.findByIdAndDelete(id);
     if (!deleted) return res.status(404).json({ error: "Member not found" });

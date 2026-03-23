@@ -22,10 +22,13 @@ const slides = [
   },
 ];
 
+const AUTO_ROTATE_MS = 5000;
+
 export default function HeroCarousel() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
 
   const next = useCallback(
     () => setCurrent((prev) => (prev + 1) % slides.length),
@@ -49,17 +52,25 @@ export default function HeroCarousel() {
   }, []);
 
   useEffect(() => {
-    if (paused || reducedMotion) return undefined;
-    const id = setInterval(next, 5000);
+    if (paused || reducedMotion || userInteracted) return undefined;
+    const id = setInterval(next, AUTO_ROTATE_MS);
     return () => clearInterval(id);
-  }, [next, paused, reducedMotion]);
+  }, [next, paused, reducedMotion, userInteracted]);
+
+  useEffect(() => {
+    if (!userInteracted) return undefined;
+    const id = setTimeout(() => setUserInteracted(false), AUTO_ROTATE_MS);
+    return () => clearTimeout(id);
+  }, [userInteracted]);
 
   const slide = slides[current];
 
   return (
     <section
       id="home"
-      className="relative min-h-[100svh] w-full overflow-hidden flex items-center justify-center"
+      role="region"
+      aria-label="Featured services carousel"
+      className="relative min-h-[100svh] w-full overflow-hidden flex items-center justify-center bg-zinc-900"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -106,9 +117,12 @@ export default function HeroCarousel() {
         {slides.map((_, i) => (
           <button
             key={i}
-            onClick={() => setCurrent(i)}
+            onClick={() => {
+              setCurrent(i);
+              setUserInteracted(true);
+            }}
             aria-label={`Go to slide ${i + 1}`}
-            className={`w-3 h-3 rounded-full transition-colors ${
+            className={`w-3 h-3 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-orange-400 ${
               i === current ? "bg-orange-500" : "bg-zinc-400/80"
             }`}
           />

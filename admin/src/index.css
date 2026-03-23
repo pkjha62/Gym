@@ -10,6 +10,11 @@
     font-family: "Manrope", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   }
 
+  :root {
+    --admin-primary: 234 88 12; /* orange-600 */
+    --admin-primary-light: 249 115 22; /* orange-500 */
+  }
+
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;

@@ -1,5 +1,6 @@
 import { FaDumbbell, FaChalkboardTeacher, FaMapMarkerAlt, FaClipboardList } from "react-icons/fa";
 import useScrollReveal from "../hooks/useScrollReveal";
+import { useState } from "react";
 
 const features = [
   {
@@ -25,6 +26,10 @@ const features = [
 ];
 
 export default function Features() {
+  const [reducedMotion] = useState(() => 
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+
   const [ref, visible] = useScrollReveal();
 
   return (
@@ -40,7 +45,7 @@ export default function Features() {
           <div
             key={f.title}
             className={`bg-orange-50 border border-orange-100 rounded-xl p-5 md:p-8 text-center hover:border-orange-300 lift-hover transition-all duration-500 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-            style={{ transitionDelay: `${idx * 100}ms` }}
+            style={{ transitionDelay: reducedMotion ? "0ms" : `${idx * 100}ms` }}
           >
             <div className="flex justify-center mb-4">{f.icon}</div>
             <h3 className="text-lg font-bold mb-2 text-zinc-900">{f.title}</h3>

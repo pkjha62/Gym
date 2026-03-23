@@ -1,14 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaPaperPlane } from "react-icons/fa";
 import useScrollReveal from "../hooks/useScrollReveal";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const STATUS_DISPLAY_MS = 4000;
 
 export default function ContactForm() {
   const [ref, visible] = useScrollReveal();
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const hash = window.location.hash || "";
+    const [, query] = hash.split("?");
+    const params = new URLSearchParams(query || "");
+    const selectedPlan = params.get("plan");
+    if (!selectedPlan) return;
+
+    setForm((prev) => ({
+      ...prev,
+      message: prev.message || `I'm interested in the ${selectedPlan} plan. Please contact me with details.`,
+    }));
+  }, []);
 
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -28,7 +42,7 @@ export default function ContactForm() {
       setStatus("error");
     } finally {
       setLoading(false);
-      setTimeout(() => setStatus(null), 4000);
+      setTimeout(() => setStatus(null), STATUS_DISPLAY_MS);
     }
   };
 
@@ -83,20 +97,22 @@ export default function ContactForm() {
         <form onSubmit={handleSubmit} className="bg-orange-50 rounded-2xl p-5 md:p-8 border border-orange-100 space-y-5" aria-busy={loading}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
-              name="name"
+                name="name"
               value={form.name}
               onChange={update}
               placeholder="Full Name"
               required
+                aria-required="true"
               className="bg-white border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
             />
             <input
-              name="email"
+                name="email"
               type="email"
               value={form.email}
               onChange={update}
               placeholder="Email Address"
               required
+                aria-required="true"
               className="bg-white border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
             />
           </div>
@@ -108,11 +124,12 @@ export default function ContactForm() {
             className="w-full bg-white border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
           />
           <textarea
-            name="message"
+                name="message"
             value={form.message}
             onChange={update}
             placeholder="Your Message"
             required
+                aria-required="true"
             rows={4}
             className="w-full bg-white border border-orange-300 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
           />

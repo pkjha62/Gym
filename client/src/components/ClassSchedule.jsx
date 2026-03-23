@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import useScrollReveal from "../hooks/useScrollReveal";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -14,6 +16,9 @@ const schedule = {
 
 export default function ClassSchedule() {
   const [ref, visible] = useScrollReveal();
+  const [reducedMotion] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
 
   return (
     <section id="schedule" className="py-16 md:py-20 px-4 bg-amber-50 section-soft">
@@ -49,7 +54,7 @@ export default function ClassSchedule() {
                   <tr
                     key={d}
                     className={`border-t border-orange-50 transition-all duration-500 ${visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"} ${i % 2 === 0 ? "bg-orange-50/40" : ""}`}
-                    style={{ transitionDelay: `${i * 80}ms` }}
+                    style={{ transitionDelay: reducedMotion ? "0ms" : `${i * 80}ms` }}
                   >
                     <td className="py-3 px-4 font-bold text-orange-600">{d}</td>
                     {[0, 1, 2, 3].map((si) => (
@@ -77,7 +82,7 @@ export default function ClassSchedule() {
             <div
               key={d}
               className={`bg-white rounded-xl border border-orange-100 p-4 transition-all duration-500 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-              style={{ transitionDelay: `${i * 60}ms` }}
+              style={{ transitionDelay: reducedMotion ? "0ms" : `${i * 60}ms` }}
             >
               <h4 className="font-bold text-orange-600 mb-2">{d}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

@@ -13,16 +13,21 @@ import Footer from "./components/Footer";
 export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 via-amber-50 to-white text-zinc-900">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[1000] focus:bg-orange-600 focus:text-white focus:px-3 focus:py-2 focus:rounded-md">
+        Skip to main content
+      </a>
       <Navbar />
-      <HeroCarousel />
-      <ProgramHighlights />
-      <AboutFounder />
-      <Features />
-      <ClassSchedule />
-      <PricingPlans />
-      <BMICalculator />
-      <Testimonials />
-      <ContactForm />
+      <main id="main-content">
+        <HeroCarousel />
+        <ProgramHighlights />
+        <AboutFounder />
+        <Features />
+        <ClassSchedule />
+        <PricingPlans />
+        <BMICalculator />
+        <Testimonials />
+        <ContactForm />
+      </main>
       <Footer />
     </div>
   );

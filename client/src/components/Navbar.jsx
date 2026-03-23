@@ -76,7 +76,7 @@ export default function Navbar() {
             <li key={l.label}>
               <a
                 href={l.href}
-                className="block rounded-md px-2 py-2 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-300"
+                className="block rounded-md px-2 py-2 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400"
                 onClick={() => setOpen(false)}
               >
                 {l.label}

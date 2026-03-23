@@ -21,10 +21,10 @@ export default function BMICalculator() {
     const bmi = (w / (h * h)).toFixed(1);
 
     let category, color;
-    if (bmi < 18.5) { category = "Underweight"; color = "text-sky-600"; }
-    else if (bmi < 25) { category = "Normal"; color = "text-emerald-600"; }
-    else if (bmi < 30) { category = "Overweight"; color = "text-amber-600"; }
-    else { category = "Obese"; color = "text-red-600"; }
+    if (bmi < 18.5) { category = "Underweight"; color = "text-blue-700"; }
+    else if (bmi < 25) { category = "Normal"; color = "text-emerald-700"; }
+    else if (bmi < 30) { category = "Overweight"; color = "text-amber-700"; }
+    else { category = "Obese"; color = "text-red-700"; }
 
     setResult({ bmi, category, color });
   };
@@ -55,6 +55,7 @@ export default function BMICalculator() {
                 onChange={(e) => setHeight(e.target.value)}
                 placeholder="e.g. 175"
                 required
+                aria-required="true"
                 className="w-full border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
               />
             </div>
@@ -67,6 +68,7 @@ export default function BMICalculator() {
                 onChange={(e) => setWeight(e.target.value)}
                 placeholder="e.g. 70"
                 required
+                aria-required="true"
                 className="w-full border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
               />
             </div>

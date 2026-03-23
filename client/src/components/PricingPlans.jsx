@@ -75,7 +75,7 @@ export default function PricingPlans() {
               </ul>
 
               <a
-                href="#contact"
+                href={`#contact?plan=${encodeURIComponent(p.name)}`}
                 aria-label={`Get started with ${p.name} plan`}
                 className={`btn-smooth block text-center py-3 rounded-lg font-semibold ${
                   p.highlighted

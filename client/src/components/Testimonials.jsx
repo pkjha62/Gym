@@ -1,5 +1,6 @@
 import { FaStar } from "react-icons/fa";
 import useScrollReveal from "../hooks/useScrollReveal";
+import { useState } from "react";
 
 const reviews = [
   {
@@ -30,6 +31,9 @@ const reviews = [
 
 export default function Testimonials() {
   const [ref, visible] = useScrollReveal();
+  const [reducedMotion] = useState(() => 
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
 
   return (
     <section className="py-16 md:py-20 px-4 bg-orange-50/70 section-soft">
@@ -44,7 +48,7 @@ export default function Testimonials() {
           <div
             key={r.name}
             className={`bg-white/90 backdrop-blur border border-orange-100 rounded-xl p-5 md:p-6 flex flex-col lift-hover transition-all duration-500 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-            style={{ transitionDelay: `${idx * 90}ms` }}
+            style={{ transitionDelay: reducedMotion ? "0ms" : `${idx * 90}ms` }}
           >
             <div className="flex gap-1 mb-4" aria-label={`${r.stars} out of 5 stars`}>
               {Array.from({ length: 5 }).map((_, i) => (

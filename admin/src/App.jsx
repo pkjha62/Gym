@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FaUsers, FaClipboardList, FaCommentDots, FaIdCard } from "react-icons/fa";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -46,6 +46,8 @@ export default function App() {
     title: "",
     description: "",
   });
+  const dialogRef = useRef(null);
+  const lastFocusedElementRef = useRef(null);
 
   const planOptions = useMemo(
     () => plans.filter((p) => p.isActive).map((p) => ({ value: p._id, label: `${p.name} (Rs ${p.price})` })),
@@ -160,6 +162,7 @@ export default function App() {
   }
 
   function openDeleteDialog(path, title) {
+    lastFocusedElementRef.current = document.activeElement;
     setConfirmDialog({
       open: true,
       path,
@@ -180,6 +183,34 @@ export default function App() {
     }
   }
 
+  useEffect(() => {
+    if (!confirmDialog.open || !dialogRef.current) return undefined;
+
+    const focusable = dialogRef.current.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first?.focus();
+
+    const onKeyDown = (e) => {
+      if (e.key !== "Tab" || !focusable.length) return;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      if (lastFocusedElementRef.current && typeof lastFocusedElementRef.current.focus === "function") {
+        lastFocusedElementRef.current.focus();
+      }
+    };
+  }, [confirmDialog.open]);
+
   async function markLeadResponded(lead) {
     try {
       await request(`/api/admin/leads/${lead._id}`, {
@@ -198,26 +229,30 @@ export default function App() {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
           <div>
             <h1 className="text-xl font-extrabold">
-              PrimeFitness <span className="text-emerald-600">Admin Panel</span>
+              PrimeFitness <span className="text-orange-600">Admin Panel</span>
             </h1>
             <p className="text-xs text-zinc-500">External dashboard for CRUD operations</p>
           </div>
-          <span className="rounded-md bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 break-all">API: {API_BASE}</span>
+          <span className="rounded-md bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 break-all">API: {API_BASE}</span>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6">
-        <nav className="mb-6 grid grid-cols-2 gap-2 md:grid-cols-4">
+        <nav className="mb-6 grid grid-cols-2 gap-2 md:grid-cols-4" role="tablist">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = activeTab === t.key;
             return (
               <button
                 key={t.key}
+                id={`${t.key}-tab`}
                 onClick={() => setActiveTab(t.key)}
-                className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+                role="tab"
+                aria-selected={active}
+                aria-controls={`${t.key}-panel`}
+                className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400 ${
                   active
-                    ? "border-emerald-600 bg-emerald-600 text-white"
+                    ? "border-orange-600 bg-orange-600 text-white"
                     : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
                 }`}
               >
@@ -227,16 +262,16 @@ export default function App() {
           })}
         </nav>
 
-        {error && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert" aria-live="polite">{error}</p>}
 
         {activeTab === "plans" && (
-          <section className="grid gap-6 lg:grid-cols-[360px_1fr] xl:grid-cols-[420px_1fr]">
+          <section id="plans-panel" role="tabpanel" aria-labelledby="plans-tab" className="grid gap-6 lg:grid-cols-[360px_1fr] xl:grid-cols-[420px_1fr]">
             <form onSubmit={submitPlan} className="card p-5 space-y-3">
               <h2 className="text-lg font-bold">{editingPlanId ? "Edit Plan" : "Create Plan"}</h2>
-              <input className="field" placeholder="Plan Name" value={planForm.name} onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })} required />
+              <input className="field" placeholder="Plan Name" value={planForm.name} onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })} required aria-required="true" />
               <div className="grid grid-cols-2 gap-3">
-                <input className="field" type="number" min="1" placeholder="Duration (months)" value={planForm.durationInMonths} onChange={(e) => setPlanForm({ ...planForm, durationInMonths: e.target.value })} required />
-                <input className="field" type="number" min="0" placeholder="Price" value={planForm.price} onChange={(e) => setPlanForm({ ...planForm, price: e.target.value })} required />
+                <input className="field" type="number" min="1" placeholder="Duration (months)" value={planForm.durationInMonths} onChange={(e) => setPlanForm({ ...planForm, durationInMonths: e.target.value })} required aria-required="true" />
+                <input className="field" type="number" min="0" placeholder="Price" value={planForm.price} onChange={(e) => setPlanForm({ ...planForm, price: e.target.value })} required aria-required="true" />
               </div>
               <textarea className="field" rows={4} placeholder="Features (comma separated)" value={planForm.features} onChange={(e) => setPlanForm({ ...planForm, features: e.target.value })} />
               <label className="flex items-center gap-2 text-sm text-zinc-600">
@@ -260,7 +295,7 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && <tr><td className="px-4 py-3" colSpan={5}>Loading...</td></tr>}
+                  {loading && <tr><td className="px-4 py-3" colSpan={5} aria-live="polite">Loading...</td></tr>}
                   {!loading && plans.map((p) => (
                     <tr key={p._id} className="border-t border-zinc-100">
                       <td className="px-4 py-3 font-medium">{p.name}</td>
@@ -282,14 +317,14 @@ export default function App() {
         )}
 
         {activeTab === "testimonials" && (
-          <section className="grid gap-6 lg:grid-cols-[360px_1fr] xl:grid-cols-[420px_1fr]">
+          <section id="testimonials-panel" role="tabpanel" aria-labelledby="testimonials-tab" className="grid gap-6 lg:grid-cols-[360px_1fr] xl:grid-cols-[420px_1fr]">
             <form onSubmit={submitTestimonial} className="card p-5 space-y-3">
               <h2 className="text-lg font-bold">{editingTestimonialId ? "Edit Testimonial" : "Create Testimonial"}</h2>
-              <input className="field" placeholder="Name" value={testimonialForm.name} onChange={(e) => setTestimonialForm({ ...testimonialForm, name: e.target.value })} required />
+              <input className="field" placeholder="Name" value={testimonialForm.name} onChange={(e) => setTestimonialForm({ ...testimonialForm, name: e.target.value })} required aria-required="true" />
               <input className="field" placeholder="Role" value={testimonialForm.role} onChange={(e) => setTestimonialForm({ ...testimonialForm, role: e.target.value })} />
-              <textarea className="field" rows={4} placeholder="Review text" value={testimonialForm.text} onChange={(e) => setTestimonialForm({ ...testimonialForm, text: e.target.value })} required />
+              <textarea className="field" rows={4} placeholder="Review text" value={testimonialForm.text} onChange={(e) => setTestimonialForm({ ...testimonialForm, text: e.target.value })} required aria-required="true" />
               <div className="grid grid-cols-2 gap-3">
-                <input className="field" type="number" min="1" max="5" placeholder="Stars" value={testimonialForm.stars} onChange={(e) => setTestimonialForm({ ...testimonialForm, stars: e.target.value })} required />
+                <input className="field" type="number" min="1" max="5" placeholder="Stars" value={testimonialForm.stars} onChange={(e) => setTestimonialForm({ ...testimonialForm, stars: e.target.value })} required aria-required="true" />
                 <label className="flex items-center gap-2 text-sm text-zinc-600">
                   <input type="checkbox" checked={testimonialForm.approved} onChange={(e) => setTestimonialForm({ ...testimonialForm, approved: e.target.checked })} /> Approved
                 </label>
@@ -301,7 +336,7 @@ export default function App() {
             </form>
 
             <div className="grid gap-3">
-              {loading && <div className="card p-4 text-sm">Loading...</div>}
+              {loading && <div className="card p-4 text-sm" aria-live="polite">Loading...</div>}
               {!loading && testimonials.map((t) => (
                 <article key={t._id} className="card p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -322,9 +357,9 @@ export default function App() {
         )}
 
         {activeTab === "leads" && (
-          <section className="card p-3 sm:p-4">
+          <section id="leads-panel" role="tabpanel" aria-labelledby="leads-tab" className="card p-3 sm:p-4">
             <div className="space-y-3 md:hidden">
-              {loading && <div className="rounded-lg border border-zinc-200 bg-white p-3 text-sm">Loading...</div>}
+              {loading && <div className="rounded-lg border border-zinc-200 bg-white p-3 text-sm" aria-live="polite">Loading...</div>}
               {!loading && leads.map((l) => (
                 <article key={l._id} className="rounded-lg border border-zinc-200 bg-white p-3 text-sm">
                   <p className="font-semibold text-zinc-900">{l.name}</p>
@@ -341,7 +376,7 @@ export default function App() {
             </div>
 
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full min-w-[920px] text-sm">
+              <table className="w-full min-w-[760px] text-sm">
                 <thead className="bg-zinc-50 text-zinc-600">
                   <tr>
                     <th className="px-4 py-3 text-left">Name</th>
@@ -353,7 +388,7 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && <tr><td className="px-4 py-3" colSpan={6}>Loading...</td></tr>}
+                  {loading && <tr><td className="px-4 py-3" colSpan={6} aria-live="polite">Loading...</td></tr>}
                   {!loading && leads.map((l) => (
                     <tr key={l._id} className="border-t border-zinc-100 align-top">
                       <td className="px-4 py-3 font-medium">{l.name}</td>
@@ -376,12 +411,12 @@ export default function App() {
         )}
 
         {activeTab === "members" && (
-          <section className="grid gap-6 lg:grid-cols-[360px_1fr] xl:grid-cols-[420px_1fr]">
+          <section id="members-panel" role="tabpanel" aria-labelledby="members-tab" className="grid gap-6 lg:grid-cols-[360px_1fr] xl:grid-cols-[420px_1fr]">
             <form onSubmit={submitMember} className="card p-5 space-y-3">
               <h2 className="text-lg font-bold">{editingMemberId ? "Edit Member" : "Create Member"}</h2>
-              <input className="field" placeholder="Full Name" value={memberForm.name} onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })} required />
-              <input className="field" type="email" placeholder="Email" value={memberForm.email} onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })} required />
-              <input className="field" type="password" placeholder={editingMemberId ? "Password (optional to change)" : "Password"} value={memberForm.password} onChange={(e) => setMemberForm({ ...memberForm, password: e.target.value })} required={!editingMemberId} />
+              <input className="field" placeholder="Full Name" value={memberForm.name} onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })} required aria-required="true" />
+              <input className="field" type="email" placeholder="Email" value={memberForm.email} onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })} required aria-required="true" />
+              <input className="field" type="password" placeholder={editingMemberId ? "Password (optional to change)" : "Password"} value={memberForm.password} onChange={(e) => setMemberForm({ ...memberForm, password: e.target.value })} required={!editingMemberId} aria-required={!editingMemberId} />
               <input className="field" placeholder="Phone" value={memberForm.phone} onChange={(e) => setMemberForm({ ...memberForm, phone: e.target.value })} />
               <select className="field" value={memberForm.activePlan} onChange={(e) => setMemberForm({ ...memberForm, activePlan: e.target.value })}>
                 <option value="">No Active Plan</option>
@@ -397,7 +432,7 @@ export default function App() {
             </form>
 
             <div className="card overflow-x-auto">
-              <table className="w-full min-w-[840px] text-sm">
+              <table className="w-full min-w-[720px] text-sm">
                 <thead className="bg-zinc-50 text-zinc-600">
                   <tr>
                     <th className="px-4 py-3 text-left">Name</th>
@@ -409,7 +444,7 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && <tr><td className="px-4 py-3" colSpan={6}>Loading...</td></tr>}
+                  {loading && <tr><td className="px-4 py-3" colSpan={6} aria-live="polite">Loading...</td></tr>}
                   {!loading && members.map((m) => (
                     <tr key={m._id} className="border-t border-zinc-100">
                       <td className="px-4 py-3 font-medium">{m.name}</td>
@@ -448,21 +483,40 @@ export default function App() {
       </main>
 
       {confirmDialog.open && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-900/50 px-4">
-          <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <h3 className="text-lg font-bold text-zinc-900">{confirmDialog.title || "Confirm action"}</h3>
-            <p className="mt-2 text-sm text-zinc-600">{confirmDialog.description}</p>
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                className="btn-secondary"
-                onClick={() => setConfirmDialog({ open: false, path: "", title: "", description: "" })}
-              >
-                Cancel
-              </button>
-              <button className="btn-danger" onClick={confirmDelete}>Delete</button>
+        <>
+          <div 
+            className="fixed inset-0 z-50 bg-zinc-900/50"
+            onClick={() => setConfirmDialog({ open: false, path: "", title: "", description: "" })}
+            role="presentation"
+          />
+          <div 
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="dialog-title"
+            aria-describedby="dialog-description"
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setConfirmDialog({ open: false, path: "", title: "", description: "" });
+              }
+            }}
+          >
+            <div ref={dialogRef} className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-xl">
+              <h3 id="dialog-title" className="text-lg font-bold text-zinc-900">{confirmDialog.title || "Confirm action"}</h3>
+              <p id="dialog-description" className="mt-2 text-sm text-zinc-600">{confirmDialog.description}</p>
+              <div className="mt-6 flex justify-end gap-2">
+                <button
+                  className="btn-secondary"
+                  onClick={() => setConfirmDialog({ open: false, path: "", title: "", description: "" })}
+                  autoFocus
+                >
+                  Cancel
+                </button>
+                <button className="btn-danger" onClick={confirmDelete}>Delete</button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
