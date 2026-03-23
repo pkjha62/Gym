@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-orange-50 text-zinc-900 font-sans;
+  }
+}
+
+@layer utilities {
+  .section-soft {
+    @apply transition-colors duration-700;
+  }
+
+  .btn-smooth {
+    @apply transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
+  .lift-hover {
+    @apply transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  .animate-fadeSlideUp {
+    animation: fadeSlideUp 650ms ease-out both;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

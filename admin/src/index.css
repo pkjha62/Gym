@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-zinc-100 text-zinc-900;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white border border-zinc-200 rounded-xl shadow-sm;
+  }
+
+  .field {
+    @apply w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none transition-colors focus:border-emerald-500;
+  }
+
+  .btn-primary {
+    @apply rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700;
+  }
+
+  .btn-secondary {
+    @apply rounded-lg bg-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-300;
+  }
+
+  .btn-danger {
+    @apply rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-700;
+  }
+}

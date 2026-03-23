@@ -1,0 +1,140 @@
+import { useState } from "react";
+import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaPaperPlane } from "react-icons/fa";
+import useScrollReveal from "../hooks/useScrollReveal";
+
+export default function ContactForm() {
+  const [ref, visible] = useScrollReveal();
+  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Submission failed");
+      setStatus("success");
+      setForm({ name: "", email: "", phone: "", message: "" });
+    } catch {
+      setStatus("error");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setStatus(null), 4000);
+    }
+  };
+
+  return (
+    <section id="contact" className="py-20 px-4 bg-white section-soft">
+      <div
+        ref={ref}
+        className={`max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+      >
+        {/* Info side */}
+        <div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Get In <span className="text-orange-500">Touch</span>
+          </h2>
+          <p className="text-zinc-600 mb-8 leading-relaxed">
+            Have questions about our programs or want to start your fitness journey?
+            Fill out the form and our team will get back to you within 24 hours.
+          </p>
+
+          <ul className="space-y-5 text-zinc-700 text-sm">
+            <li className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                <FaMapMarkerAlt className="text-orange-500" />
+              </div>
+              <div>
+                <p className="font-semibold">Visit Us</p>
+                <p className="text-zinc-500">123 Fitness Avenue, Sector 21, New Delhi — 110001</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                <FaPhoneAlt className="text-orange-500" />
+              </div>
+              <div>
+                <p className="font-semibold">Call Us</p>
+                <p className="text-zinc-500">+91 98765 43210</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                <FaEnvelope className="text-orange-500" />
+              </div>
+              <div>
+                <p className="font-semibold">Email Us</p>
+                <p className="text-zinc-500">info@primefitness.in</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        {/* Form side */}
+        <form onSubmit={handleSubmit} className="bg-orange-50 rounded-2xl p-8 border border-orange-100 space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input
+              name="name"
+              value={form.name}
+              onChange={update}
+              placeholder="Full Name"
+              required
+              className="bg-white border border-orange-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors duration-300"
+            />
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={update}
+              placeholder="Email Address"
+              required
+              className="bg-white border border-orange-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors duration-300"
+            />
+          </div>
+          <input
+            name="phone"
+            value={form.phone}
+            onChange={update}
+            placeholder="Phone Number"
+            className="w-full bg-white border border-orange-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors duration-300"
+          />
+          <textarea
+            name="message"
+            value={form.message}
+            onChange={update}
+            placeholder="Your Message"
+            required
+            rows={4}
+            className="w-full bg-white border border-orange-200 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:border-orange-500 transition-colors duration-300"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-smooth w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            <FaPaperPlane className="text-sm" />
+            {loading ? "Sending..." : "Send Message"}
+          </button>
+
+          {status === "success" && (
+            <p className="text-emerald-600 text-sm font-medium text-center animate-pulse">
+              Thank you! We&apos;ll get back to you soon.
+            </p>
+          )}
+          {status === "error" && (
+            <p className="text-red-500 text-sm font-medium text-center">
+              Something went wrong. Please try again.
+            </p>
+          )}
+        </form>
+      </div>
+    </section>
+  );
+}
