@@ -40,6 +40,13 @@ export default function App() {
   const [editingTestimonialId, setEditingTestimonialId] = useState("");
   const [editingMemberId, setEditingMemberId] = useState("");
 
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    path: "",
+    title: "",
+    description: "",
+  });
+
   const planOptions = useMemo(
     () => plans.filter((p) => p.isActive).map((p) => ({ value: p._id, label: `${p.name} (Rs ${p.price})` })),
     [plans]
@@ -152,13 +159,24 @@ export default function App() {
     }
   }
 
-  async function deleteItem(path) {
-    if (!window.confirm("Are you sure? This action cannot be undone.")) return;
+  function openDeleteDialog(path, title) {
+    setConfirmDialog({
+      open: true,
+      path,
+      title,
+      description: "This action cannot be undone.",
+    });
+  }
+
+  async function confirmDelete() {
+    if (!confirmDialog.path) return;
     try {
-      await request(path, { method: "DELETE" });
+      await request(confirmDialog.path, { method: "DELETE" });
+      setConfirmDialog({ open: false, path: "", title: "", description: "" });
       fetchData();
     } catch (err) {
       setError(err.message || "Could not delete record");
+      setConfirmDialog({ open: false, path: "", title: "", description: "" });
     }
   }
 
@@ -177,14 +195,14 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-100 text-zinc-900">
       <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
           <div>
             <h1 className="text-xl font-extrabold">
               PrimeFitness <span className="text-emerald-600">Admin Panel</span>
             </h1>
             <p className="text-xs text-zinc-500">External dashboard for CRUD operations</p>
           </div>
-          <span className="rounded-md bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">API: {API_BASE}</span>
+          <span className="rounded-md bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 break-all">API: {API_BASE}</span>
         </div>
       </header>
 
@@ -212,7 +230,7 @@ export default function App() {
         {error && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
         {activeTab === "plans" && (
-          <section className="grid gap-6 lg:grid-cols-[420px_1fr]">
+          <section className="grid gap-6 lg:grid-cols-[360px_1fr] xl:grid-cols-[420px_1fr]">
             <form onSubmit={submitPlan} className="card p-5 space-y-3">
               <h2 className="text-lg font-bold">{editingPlanId ? "Edit Plan" : "Create Plan"}</h2>
               <input className="field" placeholder="Plan Name" value={planForm.name} onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })} required />
@@ -224,14 +242,14 @@ export default function App() {
               <label className="flex items-center gap-2 text-sm text-zinc-600">
                 <input type="checkbox" checked={planForm.isActive} onChange={(e) => setPlanForm({ ...planForm, isActive: e.target.checked })} /> Active
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button className="btn-primary" type="submit">{editingPlanId ? "Update Plan" : "Create Plan"}</button>
                 <button className="btn-secondary" type="button" onClick={() => { setEditingPlanId(""); setPlanForm(initialPlan); }}>Reset</button>
               </div>
             </form>
 
-            <div className="card overflow-auto">
-              <table className="w-full text-sm">
+            <div className="card overflow-x-auto">
+              <table className="w-full min-w-[680px] text-sm">
                 <thead className="bg-zinc-50 text-zinc-600">
                   <tr>
                     <th className="px-4 py-3 text-left">Name</th>
@@ -250,9 +268,9 @@ export default function App() {
                       <td className="px-4 py-3">Rs {p.price}</td>
                       <td className="px-4 py-3">{p.isActive ? "Yes" : "No"}</td>
                       <td className="px-4 py-3">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <button className="btn-secondary" onClick={() => { setEditingPlanId(p._id); setPlanForm({ name: p.name, durationInMonths: p.durationInMonths, price: p.price, features: (p.features || []).join(", "), isActive: p.isActive }); }}>Edit</button>
-                          <button className="btn-danger" onClick={() => deleteItem(`/api/admin/plans/${p._id}`)}>Delete</button>
+                          <button className="btn-danger" onClick={() => openDeleteDialog(`/api/admin/plans/${p._id}`, `Delete ${p.name}?`)}>Delete</button>
                         </div>
                       </td>
                     </tr>
@@ -264,7 +282,7 @@ export default function App() {
         )}
 
         {activeTab === "testimonials" && (
-          <section className="grid gap-6 lg:grid-cols-[420px_1fr]">
+          <section className="grid gap-6 lg:grid-cols-[360px_1fr] xl:grid-cols-[420px_1fr]">
             <form onSubmit={submitTestimonial} className="card p-5 space-y-3">
               <h2 className="text-lg font-bold">{editingTestimonialId ? "Edit Testimonial" : "Create Testimonial"}</h2>
               <input className="field" placeholder="Name" value={testimonialForm.name} onChange={(e) => setTestimonialForm({ ...testimonialForm, name: e.target.value })} required />
@@ -276,7 +294,7 @@ export default function App() {
                   <input type="checkbox" checked={testimonialForm.approved} onChange={(e) => setTestimonialForm({ ...testimonialForm, approved: e.target.checked })} /> Approved
                 </label>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button className="btn-primary" type="submit">{editingTestimonialId ? "Update" : "Create"}</button>
                 <button className="btn-secondary" type="button" onClick={() => { setEditingTestimonialId(""); setTestimonialForm(initialTestimonial); }}>Reset</button>
               </div>
@@ -287,14 +305,14 @@ export default function App() {
               {!loading && testimonials.map((t) => (
                 <article key={t._id} className="card p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="font-semibold">{t.name} <span className="text-xs text-zinc-500">({t.role || "Member"})</span></h3>
-                      <p className="text-sm text-zinc-600">{t.text}</p>
+                      <p className="text-sm text-zinc-600 break-words">{t.text}</p>
                       <p className="mt-1 text-xs text-zinc-500">Stars: {t.stars} | Approved: {t.approved ? "Yes" : "No"}</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <button className="btn-secondary" onClick={() => { setEditingTestimonialId(t._id); setTestimonialForm({ name: t.name, role: t.role || "", text: t.text, stars: t.stars, approved: t.approved }); }}>Edit</button>
-                      <button className="btn-danger" onClick={() => deleteItem(`/api/admin/testimonials/${t._id}`)}>Delete</button>
+                      <button className="btn-danger" onClick={() => openDeleteDialog(`/api/admin/testimonials/${t._id}`, `Delete testimonial from ${t.name}?`)}>Delete</button>
                     </div>
                   </div>
                 </article>
@@ -304,42 +322,61 @@ export default function App() {
         )}
 
         {activeTab === "leads" && (
-          <section className="card overflow-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 text-zinc-600">
-                <tr>
-                  <th className="px-4 py-3 text-left">Name</th>
-                  <th className="px-4 py-3 text-left">Email</th>
-                  <th className="px-4 py-3 text-left">Phone</th>
-                  <th className="px-4 py-3 text-left">Message</th>
-                  <th className="px-4 py-3 text-left">Responded</th>
-                  <th className="px-4 py-3 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading && <tr><td className="px-4 py-3" colSpan={6}>Loading...</td></tr>}
-                {!loading && leads.map((l) => (
-                  <tr key={l._id} className="border-t border-zinc-100 align-top">
-                    <td className="px-4 py-3 font-medium">{l.name}</td>
-                    <td className="px-4 py-3">{l.email}</td>
-                    <td className="px-4 py-3">{l.phone || "-"}</td>
-                    <td className="px-4 py-3 max-w-md">{l.message}</td>
-                    <td className="px-4 py-3">{l.responded ? "Yes" : "No"}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <button className="btn-secondary" onClick={() => markLeadResponded(l)}>{l.responded ? "Mark Pending" : "Mark Responded"}</button>
-                        <button className="btn-danger" onClick={() => deleteItem(`/api/admin/leads/${l._id}`)}>Delete</button>
-                      </div>
-                    </td>
+          <section className="card p-3 sm:p-4">
+            <div className="space-y-3 md:hidden">
+              {loading && <div className="rounded-lg border border-zinc-200 bg-white p-3 text-sm">Loading...</div>}
+              {!loading && leads.map((l) => (
+                <article key={l._id} className="rounded-lg border border-zinc-200 bg-white p-3 text-sm">
+                  <p className="font-semibold text-zinc-900">{l.name}</p>
+                  <p className="text-zinc-600 break-words">{l.email}</p>
+                  <p className="text-zinc-600">{l.phone || "-"}</p>
+                  <p className="mt-2 text-zinc-700 break-words">{l.message}</p>
+                  <p className="mt-2 text-xs text-zinc-500">Responded: {l.responded ? "Yes" : "No"}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button className="btn-secondary" onClick={() => markLeadResponded(l)}>{l.responded ? "Mark Pending" : "Mark Responded"}</button>
+                    <button className="btn-danger" onClick={() => openDeleteDialog(`/api/admin/leads/${l._id}`, `Delete lead from ${l.name}?`)}>Delete</button>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full min-w-[920px] text-sm">
+                <thead className="bg-zinc-50 text-zinc-600">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Name</th>
+                    <th className="px-4 py-3 text-left">Email</th>
+                    <th className="px-4 py-3 text-left">Phone</th>
+                    <th className="px-4 py-3 text-left">Message</th>
+                    <th className="px-4 py-3 text-left">Responded</th>
+                    <th className="px-4 py-3 text-left">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {loading && <tr><td className="px-4 py-3" colSpan={6}>Loading...</td></tr>}
+                  {!loading && leads.map((l) => (
+                    <tr key={l._id} className="border-t border-zinc-100 align-top">
+                      <td className="px-4 py-3 font-medium">{l.name}</td>
+                      <td className="px-4 py-3">{l.email}</td>
+                      <td className="px-4 py-3">{l.phone || "-"}</td>
+                      <td className="px-4 py-3 max-w-xs lg:max-w-md whitespace-normal break-words">{l.message}</td>
+                      <td className="px-4 py-3">{l.responded ? "Yes" : "No"}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <button className="btn-secondary" onClick={() => markLeadResponded(l)}>{l.responded ? "Mark Pending" : "Mark Responded"}</button>
+                          <button className="btn-danger" onClick={() => openDeleteDialog(`/api/admin/leads/${l._id}`, `Delete lead from ${l.name}?`)}>Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         )}
 
         {activeTab === "members" && (
-          <section className="grid gap-6 lg:grid-cols-[420px_1fr]">
+          <section className="grid gap-6 lg:grid-cols-[360px_1fr] xl:grid-cols-[420px_1fr]">
             <form onSubmit={submitMember} className="card p-5 space-y-3">
               <h2 className="text-lg font-bold">{editingMemberId ? "Edit Member" : "Create Member"}</h2>
               <input className="field" placeholder="Full Name" value={memberForm.name} onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })} required />
@@ -353,14 +390,14 @@ export default function App() {
                 ))}
               </select>
               <input className="field" type="date" value={memberForm.planExpiry} onChange={(e) => setMemberForm({ ...memberForm, planExpiry: e.target.value })} />
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button className="btn-primary" type="submit">{editingMemberId ? "Update" : "Create"}</button>
                 <button className="btn-secondary" type="button" onClick={() => { setEditingMemberId(""); setMemberForm(initialMember); }}>Reset</button>
               </div>
             </form>
 
-            <div className="card overflow-auto">
-              <table className="w-full text-sm">
+            <div className="card overflow-x-auto">
+              <table className="w-full min-w-[840px] text-sm">
                 <thead className="bg-zinc-50 text-zinc-600">
                   <tr>
                     <th className="px-4 py-3 text-left">Name</th>
@@ -381,7 +418,7 @@ export default function App() {
                       <td className="px-4 py-3">{m.activePlan?.name || "None"}</td>
                       <td className="px-4 py-3">{m.planExpiry ? new Date(m.planExpiry).toLocaleDateString() : "-"}</td>
                       <td className="px-4 py-3">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <button
                             className="btn-secondary"
                             onClick={() => {
@@ -398,7 +435,7 @@ export default function App() {
                           >
                             Edit
                           </button>
-                          <button className="btn-danger" onClick={() => deleteItem(`/api/admin/members/${m._id}`)}>Delete</button>
+                          <button className="btn-danger" onClick={() => openDeleteDialog(`/api/admin/members/${m._id}`, `Delete ${m.name}?`)}>Delete</button>
                         </div>
                       </td>
                     </tr>
@@ -409,6 +446,24 @@ export default function App() {
           </section>
         )}
       </main>
+
+      {confirmDialog.open && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-900/50 px-4">
+          <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-5 shadow-xl">
+            <h3 className="text-lg font-bold text-zinc-900">{confirmDialog.title || "Confirm action"}</h3>
+            <p className="mt-2 text-sm text-zinc-600">{confirmDialog.description}</p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                className="btn-secondary"
+                onClick={() => setConfirmDialog({ open: false, path: "", title: "", description: "" })}
+              >
+                Cancel
+              </button>
+              <button className="btn-danger" onClick={confirmDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -24,6 +24,8 @@ const slides = [
 
 export default function HeroCarousel() {
   const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   const next = useCallback(
     () => setCurrent((prev) => (prev + 1) % slides.length),
@@ -35,16 +37,33 @@ export default function HeroCarousel() {
   );
 
   useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(media.matches);
+
+    function onChange(event) {
+      setReducedMotion(event.matches);
+    }
+
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
+    if (paused || reducedMotion) return undefined;
     const id = setInterval(next, 5000);
     return () => clearInterval(id);
-  }, [next]);
+  }, [next, paused, reducedMotion]);
 
   const slide = slides[current];
 
   return (
     <section
       id="home"
-      className="relative h-screen w-full overflow-hidden flex items-center justify-center"
+      className="relative min-h-[100svh] w-full overflow-hidden flex items-center justify-center"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
     >
       {/* Background image with crossfade */}
       {slides.map((s, i) => (
@@ -62,10 +81,10 @@ export default function HeroCarousel() {
 
       {/* Content — key forces re-mount for entrance animation */}
       <div key={current} className="relative z-10 text-center px-4 max-w-3xl animate-fadeSlideUp">
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-4 text-zinc-900 drop-shadow-sm">
+        <h1 className="text-[clamp(2rem,7vw,4.5rem)] font-black leading-tight mb-4 text-zinc-900 drop-shadow-sm">
           {slide.headline}
         </h1>
-        <p className="text-lg md:text-xl text-zinc-700 mb-8">{slide.sub}</p>
+        <p className="text-base sm:text-lg md:text-xl text-zinc-700 mb-8">{slide.sub}</p>
         <a
           href="#contact"
           className="inline-block btn-smooth bg-orange-600 hover:bg-orange-700 px-8 py-3 rounded-md text-lg font-bold text-white"
@@ -75,15 +94,15 @@ export default function HeroCarousel() {
       </div>
 
       {/* Arrow controls */}
-      <button onClick={prev} aria-label="Previous slide" className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-zinc-800 transition-all duration-300 hover:scale-110">
+      <button onClick={prev} aria-label="Previous slide" className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/80 hover:bg-white flex items-center justify-center text-zinc-800 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-500">
         <FaChevronLeft />
       </button>
-      <button onClick={next} aria-label="Next slide" className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/70 hover:bg-white flex items-center justify-center text-zinc-800 transition-all duration-300 hover:scale-110">
+      <button onClick={next} aria-label="Next slide" className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/80 hover:bg-white flex items-center justify-center text-zinc-800 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-500">
         <FaChevronRight />
       </button>
 
       {/* Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+      <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
         {slides.map((_, i) => (
           <button
             key={i}

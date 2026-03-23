@@ -16,7 +16,7 @@ export default function ClassSchedule() {
   const [ref, visible] = useScrollReveal();
 
   return (
-    <section id="schedule" className="py-20 px-4 bg-amber-50 section-soft">
+    <section id="schedule" className="py-16 md:py-20 px-4 bg-amber-50 section-soft">
       <div
         ref={ref}
         className={`max-w-7xl mx-auto transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
@@ -57,7 +57,7 @@ export default function ClassSchedule() {
                         {slots[si] ? (
                           <>
                             <span className="font-medium">{slots[si].cls}</span>
-                            <span className="block text-xs text-zinc-400">{slots[si].time}</span>
+                            <span className="block text-xs text-zinc-500">{slots[si].time}</span>
                           </>
                         ) : (
                           <span className="text-zinc-300">—</span>
@@ -80,11 +80,11 @@ export default function ClassSchedule() {
               style={{ transitionDelay: `${i * 60}ms` }}
             >
               <h4 className="font-bold text-orange-600 mb-2">{d}</h4>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {schedule[d].map((s) => (
                   <div key={s.time} className="bg-orange-50 rounded-lg p-2 text-xs">
                     <p className="font-semibold text-zinc-800">{s.cls}</p>
-                    <p className="text-zinc-400">{s.time}</p>
+                    <p className="text-zinc-500">{s.time}</p>
                   </div>
                 ))}
               </div>

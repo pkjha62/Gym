@@ -2,6 +2,8 @@ import { useState } from "react";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaPaperPlane } from "react-icons/fa";
 import useScrollReveal from "../hooks/useScrollReveal";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function ContactForm() {
   const [ref, visible] = useScrollReveal();
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
@@ -14,7 +16,7 @@ export default function ContactForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/contact", {
+      const res = await fetch(`${API_BASE}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -31,10 +33,10 @@ export default function ContactForm() {
   };
 
   return (
-    <section id="contact" className="py-20 px-4 bg-white section-soft">
+    <section id="contact" className="py-16 md:py-20 px-4 bg-white section-soft">
       <div
         ref={ref}
-        className={`max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+        className={`max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
       >
         {/* Info side */}
         <div>
@@ -78,7 +80,7 @@ export default function ContactForm() {
         </div>
 
         {/* Form side */}
-        <form onSubmit={handleSubmit} className="bg-orange-50 rounded-2xl p-8 border border-orange-100 space-y-5">
+        <form onSubmit={handleSubmit} className="bg-orange-50 rounded-2xl p-5 md:p-8 border border-orange-100 space-y-5" aria-busy={loading}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
               name="name"
@@ -86,7 +88,7 @@ export default function ContactForm() {
               onChange={update}
               placeholder="Full Name"
               required
-              className="bg-white border border-orange-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors duration-300"
+              className="bg-white border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
             />
             <input
               name="email"
@@ -95,7 +97,7 @@ export default function ContactForm() {
               onChange={update}
               placeholder="Email Address"
               required
-              className="bg-white border border-orange-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors duration-300"
+              className="bg-white border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
             />
           </div>
           <input
@@ -103,7 +105,7 @@ export default function ContactForm() {
             value={form.phone}
             onChange={update}
             placeholder="Phone Number"
-            className="w-full bg-white border border-orange-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors duration-300"
+            className="w-full bg-white border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
           />
           <textarea
             name="message"
@@ -112,11 +114,12 @@ export default function ContactForm() {
             placeholder="Your Message"
             required
             rows={4}
-            className="w-full bg-white border border-orange-200 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:border-orange-500 transition-colors duration-300"
+            className="w-full bg-white border border-orange-300 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
           />
           <button
             type="submit"
             disabled={loading}
+            aria-live="polite"
             className="btn-smooth w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 disabled:opacity-60"
           >
             <FaPaperPlane className="text-sm" />
@@ -124,12 +127,12 @@ export default function ContactForm() {
           </button>
 
           {status === "success" && (
-            <p className="text-emerald-600 text-sm font-medium text-center animate-pulse">
+            <p role="status" className="text-emerald-700 text-sm font-medium text-center">
               Thank you! We&apos;ll get back to you soon.
             </p>
           )}
           {status === "error" && (
-            <p className="text-red-500 text-sm font-medium text-center">
+            <p role="alert" className="text-red-700 text-sm font-medium text-center">
               Something went wrong. Please try again.
             </p>
           )}

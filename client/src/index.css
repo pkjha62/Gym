@@ -1,11 +1,37 @@
 @import "tailwindcss";
 
+:root {
+  --brand-50: #fff7ed;
+  --brand-100: #ffedd5;
+  --brand-300: #fdba74;
+  --brand-500: #f97316;
+  --brand-600: #ea580c;
+  --ink-900: #18181b;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
   }
+
   body {
-    @apply bg-orange-50 text-zinc-900 font-sans;
+    @apply bg-orange-50 text-zinc-900 antialiased;
+    font-family: "Space Grotesk", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

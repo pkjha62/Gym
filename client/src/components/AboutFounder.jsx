@@ -4,15 +4,15 @@ export default function AboutFounder() {
   const [ref, visible] = useScrollReveal();
 
   return (
-    <section id="about" className="py-20 px-4 bg-amber-50 section-soft">
-      <div ref={ref} className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    <section id="about" className="py-16 md:py-20 px-4 bg-amber-50 section-soft">
+      <div ref={ref} className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
         {/* Image */}
         <div className={`relative transition-all duration-700 ${visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}>
           <img
             src="https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=700&q=80"
             alt="Founder"
             loading="lazy"
-            className="rounded-2xl shadow-xl w-full object-cover max-h-[500px]"
+            className="rounded-2xl shadow-xl w-full object-cover max-h-[420px] md:max-h-[500px]"
           />
           <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-orange-600 text-white rounded-full hidden lg:flex items-center justify-center text-xs font-bold leading-tight text-center">
             10+<br />Years
@@ -24,7 +24,7 @@ export default function AboutFounder() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Meet Our <span className="text-orange-500">Founder</span>
           </h2>
-          <blockquote className="border-l-4 border-orange-500 pl-4 italic text-zinc-700 text-lg mb-6">
+          <blockquote className="border-l-4 border-orange-500 pl-4 italic text-zinc-700 text-base md:text-lg mb-6">
             "Healthy India, Wealthy India — that is the mission we live and
             breathe every single day."
           </blockquote>

@@ -29,7 +29,7 @@ export default function PricingPlans() {
   const [ref, visible] = useScrollReveal();
 
   return (
-    <section id="plans" className="py-20 px-4 bg-white section-soft">
+    <section id="plans" className="py-16 md:py-20 px-4 bg-white section-soft">
       <div ref={ref} className={`max-w-7xl mx-auto transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold">
@@ -40,15 +40,15 @@ export default function PricingPlans() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8 items-stretch">
           {plans.map((p, idx) => (
             <div
               key={p.name}
-              className={`relative rounded-2xl p-8 flex flex-col border transition-all duration-500 ${
+              className={`relative rounded-2xl p-6 md:p-8 flex flex-col border transition-all duration-500 ${
                 visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
               } ${
                 p.highlighted
-                  ? "bg-orange-600 text-white border-orange-600 scale-[1.03] shadow-2xl"
+                  ? "bg-orange-600 text-white border-orange-600 md:scale-[1.03] shadow-2xl"
                   : "bg-orange-50 border-orange-100 hover:border-orange-300 lift-hover"
               }`}
               style={{ transitionDelay: `${idx * 120}ms` }}
@@ -61,7 +61,7 @@ export default function PricingPlans() {
 
               <h3 className={`text-xl font-bold mb-1 ${p.highlighted ? "" : "text-zinc-900"}`}>{p.name}</h3>
               <div className="mb-6">
-                <span className="text-4xl font-black">₹{p.price}</span>
+                <span className="text-3xl md:text-4xl font-black">₹{p.price}</span>
                 <span className={`text-sm ${p.highlighted ? "text-orange-100" : "text-zinc-500"}`}>{p.duration}</span>
               </div>
 
@@ -76,6 +76,7 @@ export default function PricingPlans() {
 
               <a
                 href="#contact"
+                aria-label={`Get started with ${p.name} plan`}
                 className={`btn-smooth block text-center py-3 rounded-lg font-semibold ${
                   p.highlighted
                     ? "bg-white text-orange-600 hover:bg-orange-50"

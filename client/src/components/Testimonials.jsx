@@ -32,25 +32,26 @@ export default function Testimonials() {
   const [ref, visible] = useScrollReveal();
 
   return (
-    <section className="py-20 px-4 bg-orange-50/70 section-soft">
+    <section className="py-16 md:py-20 px-4 bg-orange-50/70 section-soft">
       <div ref={ref} className={`max-w-7xl mx-auto text-center mb-14 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
         <h2 className="text-3xl md:text-4xl font-bold">
           What Our <span className="text-orange-500">Members</span> Say
         </h2>
       </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
         {reviews.map((r, idx) => (
           <div
             key={r.name}
-            className={`bg-white/90 backdrop-blur border border-orange-100 rounded-xl p-6 flex flex-col lift-hover transition-all duration-500 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+            className={`bg-white/90 backdrop-blur border border-orange-100 rounded-xl p-5 md:p-6 flex flex-col lift-hover transition-all duration-500 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
             style={{ transitionDelay: `${idx * 90}ms` }}
           >
-            <div className="flex gap-1 mb-4">
+            <div className="flex gap-1 mb-4" aria-label={`${r.stars} out of 5 stars`}>
               {Array.from({ length: 5 }).map((_, i) => (
                 <FaStar
                   key={i}
                   className={i < r.stars ? "text-orange-500" : "text-zinc-300"}
+                  aria-hidden="true"
                 />
               ))}
             </div>

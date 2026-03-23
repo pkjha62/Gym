@@ -4,21 +4,21 @@ import useScrollReveal from "../hooks/useScrollReveal";
 
 const programs = [
   {
-    icon: <GiWeightLiftingUp className="text-5xl text-orange-500" />,
+    icon: <GiWeightLiftingUp className="text-4xl md:text-5xl text-orange-500" aria-hidden="true" />,
     title: "Lifting Weight",
     desc: "Build raw strength with our professional powerlifting setups and guided barbell programs.",
     image:
       "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&q=80",
   },
   {
-    icon: <FaDumbbell className="text-5xl text-orange-500" />,
+    icon: <FaDumbbell className="text-4xl md:text-5xl text-orange-500" aria-hidden="true" />,
     title: "Dumbbells",
     desc: "From 5 lb to 150 lb — a full dumbbell range for isolation work and functional training.",
     image:
       "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80",
   },
   {
-    icon: <GiRunningShoe className="text-5xl text-orange-500" />,
+    icon: <GiRunningShoe className="text-4xl md:text-5xl text-orange-500" aria-hidden="true" />,
     title: "Randomised Workouts",
     desc: "Never get bored again. Our AI-free curated routines keep your muscles guessing every session.",
     image:
@@ -30,7 +30,7 @@ export default function ProgramHighlights() {
   const [ref, visible] = useScrollReveal();
 
   return (
-    <section id="facilities" className="py-20 px-4 bg-white section-soft">
+    <section id="facilities" className="py-16 md:py-20 px-4 bg-white section-soft">
       <div ref={ref} className={`max-w-7xl mx-auto text-center mb-14 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
         <h2 className="text-3xl md:text-4xl font-bold">
           Our <span className="text-orange-500">Programs</span>
@@ -40,7 +40,7 @@ export default function ProgramHighlights() {
         </p>
       </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8">
         {programs.map((p, idx) => (
           <div
             key={p.title}
@@ -51,9 +51,9 @@ export default function ProgramHighlights() {
               src={p.image}
               alt={p.title}
               loading="lazy"
-              className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-48 md:h-52 object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            <div className="p-6">
+            <div className="p-5 md:p-6">
               <div className="mb-3">{p.icon}</div>
               <h3 className="text-xl font-bold mb-2 text-zinc-900">{p.title}</h3>
               <p className="text-zinc-600 text-sm leading-relaxed">{p.desc}</p>

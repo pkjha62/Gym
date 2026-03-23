@@ -6,12 +6,18 @@ export default function BMICalculator() {
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [result, setResult] = useState(null);
+  const [inputError, setInputError] = useState("");
 
   const calculate = (e) => {
     e.preventDefault();
     const h = parseFloat(height) / 100;
     const w = parseFloat(weight);
-    if (!h || !w || h <= 0 || w <= 0) return;
+    if (!h || !w || h <= 0 || w <= 0) {
+      setInputError("Please enter valid positive values for height and weight.");
+      setResult(null);
+      return;
+    }
+    setInputError("");
     const bmi = (w / (h * h)).toFixed(1);
 
     let category, color;
@@ -24,7 +30,7 @@ export default function BMICalculator() {
   };
 
   return (
-    <section className="py-20 px-4 bg-orange-50/70 section-soft">
+    <section className="py-16 md:py-20 px-4 bg-orange-50/70 section-soft">
       <div
         ref={ref}
         className={`max-w-3xl mx-auto transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
@@ -38,7 +44,7 @@ export default function BMICalculator() {
           </p>
         </div>
 
-        <form onSubmit={calculate} className="bg-white rounded-2xl border border-orange-100 p-8 shadow-sm">
+        <form onSubmit={calculate} className="bg-white rounded-2xl border border-orange-100 p-5 md:p-8 shadow-sm" noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
             <div>
               <label className="block text-sm font-medium text-zinc-700 mb-1">Height (cm)</label>
@@ -49,7 +55,7 @@ export default function BMICalculator() {
                 onChange={(e) => setHeight(e.target.value)}
                 placeholder="e.g. 175"
                 required
-                className="w-full border border-orange-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors duration-300"
+                className="w-full border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
               />
             </div>
             <div>
@@ -61,7 +67,7 @@ export default function BMICalculator() {
                 onChange={(e) => setWeight(e.target.value)}
                 placeholder="e.g. 70"
                 required
-                className="w-full border border-orange-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-colors duration-300"
+                className="w-full border border-orange-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors duration-300"
               />
             </div>
           </div>
@@ -72,10 +78,18 @@ export default function BMICalculator() {
             Calculate BMI
           </button>
 
+          {inputError && (
+            <p role="alert" className="mt-4 text-sm font-medium text-red-700 text-center">
+              {inputError}
+            </p>
+          )}
+
           {result && (
-            <div className="mt-6 text-center animate-pulse">
-              <p className="text-5xl font-black text-zinc-900">{result.bmi}</p>
-              <p className={`text-lg font-bold mt-1 ${result.color}`}>{result.category}</p>
+            <div className="mt-6 text-center" aria-live="polite">
+              <p className="text-4xl md:text-5xl font-black text-zinc-900">{result.bmi}</p>
+              <p className={`text-base md:text-lg font-bold mt-1 ${result.color}`}>
+                Category: {result.category}
+              </p>
             </div>
           )}
         </form>
